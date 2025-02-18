@@ -1,0 +1,8 @@
+matplotlib
+scipy
+scikit-learn
+numpy
+audiomentations
+seaborn
+tqdm
+librosa
