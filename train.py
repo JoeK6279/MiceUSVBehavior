@@ -113,41 +113,25 @@ class SimpleAudioClassifier(nn.Module):
         x = self.classifier(x)
         return x
 
-def create_data(data_dir, sol=False, seed=42):
+def create_data(data_dir, seed=42):
     files = []
     labels = []
     
     class_files_dict = {}
-    if sol:
-        for class_idx, class_dir in enumerate(sorted(Path(data_dir).glob('*'))):
-            class_files = list(class_dir.glob('*.wav'))
-            class_files_dict[class_dir] = class_files
+    for class_idx, class_dir in enumerate(sorted(Path(data_dir).glob('*'))):
+        class_files = list(class_dir.glob('*.wav'))
+        class_files_dict[class_dir] = class_files
 
-        files = []
-        labels = []
-        
-        idx2class = {0: 'non_social', 1: 'social'}
-        for count, (class_dir, class_files) in enumerate(class_files_dict.items()):
-            files.extend(class_files)
-            if str(class_dir).split('/')[-1] in ['exploring',"rearing","self_grooming","digging"]:
-                labels.extend([0] * len(class_files))
-            else:
-                labels.extend([1] * len(class_files))
-
-    else:
-        path = Path(data_dir).joinpath('exploring')
-        class_files_dict[path] = list(path.glob('*.wav'))
-        path = Path(data_dir).joinpath('anogenital_sniffing')
-        class_files_dict[path] = list(path.glob('*.wav'))
+    files = []
+    labels = []
     
-        files = []
-        labels = []
-        
-        idx2class = {}
-        for count, (class_dir, class_files) in enumerate(class_files_dict.items()):
-            files.extend(class_files)
-            labels.extend([count] * len(class_files))
-            idx2class[count] = str(class_dir).split('/')[-1]
+    idx2class = {0: 'non_social', 1: 'social'}
+    for count, (class_dir, class_files) in enumerate(class_files_dict.items()):
+        files.extend(class_files)
+        if str(class_dir).split('/')[-1] in ['exploring',"rearing","self_grooming","digging"]:
+            labels.extend([0] * len(class_files))
+        else:
+            labels.extend([1] * len(class_files))
     
     return (files, labels), idx2class
 

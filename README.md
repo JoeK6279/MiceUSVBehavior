@@ -1,6 +1,8 @@
 # Predicting Behavior from Mice USVs
 This is the source code for the paper "A Deep Neural Network for Automatic Prediction of Mouse Behavior from USV Communication". 
 
+The trained model weights can be found [here](https://github.com/JoeK6279/MiceUSVBehavior/releases/download/v1.0/weights.zip).
+
 ## Installation
 To use this code, first clone the repository.
 ```bash
