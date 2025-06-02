@@ -3,6 +3,10 @@ import librosa
 from scipy import signal
 import torch
 import argparse
+import torchaudio
+import os
+import pandas as pd
+import shutil
 
 class UltrasonicPreprocessor:
     def __init__(
@@ -36,7 +40,7 @@ class UltrasonicPreprocessor:
             n_fft=512,
             hop_length=64,
             win_length=512,
-            window= signal.kaiser(512, beta=5)
+            window= signal.windows.kaiser(512, beta=5)
         )
         return abs(S)
     
@@ -75,15 +79,12 @@ class UltrasonicPreprocessor:
 def main(d=0, datapath='', outpath = ''):
     d_text = d if d in [1,2]  else str(d).replace('.','')
     
-    import os
-    import pandas as pd
-    import torchaudio
     out = ''
     for f in os.listdir(f'{datapath}/WT 3 weeks'):
         preprocessor = UltrasonicPreprocessor(segment_duration=d)
         print(f"{datapath}/WT 3 weeks/{f}")
         segments, segments_time= preprocessor.process_file(f"{datapath}/WT 3 weeks/{f}")
-        df = pd.read_excel(f"{datapath}/WT 3 weeks NUOVI.xlsx", sheet_name=f.split('.')[0])
+        df = pd.read_excel(f"{datapath}/WT 3 weeks/WT 3 weeks NUOVI.xlsx", sheet_name=f.split('.')[0])
         cut_time = df['Time_Relative_sf'].to_numpy()
         labels = df['Behavior'].to_numpy()
         cut_time = cut_time[::2]*250000
@@ -113,7 +114,7 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_test/{labels[s_idx]}/WT_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
+            
         else:
             for n, (seg, seg_time) in enumerate(zip(segments, segments_time)):
                 s_idx = np.argmax(cut_time>seg_time[0])-1
@@ -122,18 +123,15 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_train/{labels[s_idx]}/WT_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
+            
     open(f'{outpath}/mouse_{d_text}s_WT_3_weeks.txt','w').write(out)
 
-    import os
-    import torchaudio
-    import pandas as pd
     out = ''
     for f in range(1,9):
         preprocessor = UltrasonicPreprocessor(segment_duration=d)
-        print(f"{datapath}/WT_vh_6_weeks/T{f:07d}.WAV")
-        segments, segments_time= preprocessor.process_file(f"{datapath}/WT_vh_6_weeks/T{f:07d}.WAV")
-        df = pd.read_excel(f"{datapath}/WT_vh_6_weeks/topo {f} - 6 weeks.xlsx")
+        print(f"{datapath}/WT vh 6 weeks/T{f:07d}.WAV")
+        segments, segments_time= preprocessor.process_file(f"{datapath}/WT vh 6 weeks/T{f:07d}.WAV")
+        df = pd.read_excel(f"{datapath}/WT vh 6 weeks/topo {f} - 6 weeks.xlsx")
         cut_time = np.concatenate((np.array([0]), df['Unnamed: 0'].values[2:-2]))
         labels = df['Unnamed: 3'].values[2:-2]
         labels[::2] = 'exploring'
@@ -150,7 +148,6 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_test/{labels[s_idx]}/WT_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
         else:
             for n, (seg, seg_time) in enumerate(zip(segments, segments_time)):
                 s_idx = np.argmax(cut_time>seg_time[0])-1
@@ -159,19 +156,17 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_train/{labels[s_idx]}/WT_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
     open(f'{outpath}/mouse_{d_text}s_WT_6_weeks.txt','w').write(out)
 
 
-    import os
-    import pandas as pd
-    import torchaudio
     out = ''
     for f in os.listdir(f'{datapath}/KO 3 weeks'):
+        if not (f.endswith('.WAV') or f.endswith('.wav')):
+            continue
         preprocessor = UltrasonicPreprocessor(segment_duration=d)
         print(f"{datapath}/KO 3 weeks/{f}")
         segments, segments_time= preprocessor.process_file(f"{datapath}/KO 3 weeks/{f}")
-        df = pd.read_excel(f"{datapath}/KO 3 weeks NUOVI.xlsx", sheet_name=f.split('.')[0])
+        df = pd.read_excel(f"{datapath}/KO 3 weeks/KO 3 weeks NUOVI.xlsx", sheet_name=f.split('.')[0])
         cut_time = df['Time_Relative_sf'].to_numpy()
         labels = df['Behavior'].to_numpy()
         cut_time = cut_time[::2]*250000
@@ -200,7 +195,7 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_test/{labels[s_idx]}/KO_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
+            
         else:
             for n, (seg, seg_time) in enumerate(zip(segments, segments_time)):
                 s_idx = np.argmax(cut_time>seg_time[0])-1
@@ -209,18 +204,15 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_train/{labels[s_idx]}/KO_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
     open(f'{outpath}/mouse_{d_text}s_KO_3_weeks.txt','w').write(out)
 
-    import os
-    import torchaudio
-    import pandas as pd
+
     out = ''
     for f in range(3,10):
         preprocessor = UltrasonicPreprocessor(segment_duration=d)
-        print(f"{datapath}/KO_vh_6_weeks/T{f:07d}.WAV")
-        segments, segments_time= preprocessor.process_file(f"{datapath}/KO_vh_6_weeks/T{f:07d}.WAV")
-        df = pd.read_excel(f"{datapath}/KO_vh_6_weeks/topo {f} - 6 weeks.xlsx")
+        print(f"{datapath}/KO vh 6 weeks/T{f:07d}.WAV")
+        segments, segments_time= preprocessor.process_file(f"{datapath}/KO vh 6 weeks/T{f:07d}.WAV")
+        df = pd.read_excel(f"{datapath}/KO vh 6 weeks/topo {f} - 6 weeks.xlsx")
         cut_time = np.concatenate((np.array([0]), df['Unnamed: 0'].values[2:-2]))
         labels = df['Unnamed: 3'].values[2:-2]
         labels[::2] = 'exploring'
@@ -237,7 +229,6 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_test/{labels[s_idx]}/KO_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
         else:
             for n, (seg, seg_time) in enumerate(zip(segments, segments_time)):
                 s_idx = np.argmax(cut_time>seg_time[0])-1
@@ -246,10 +237,8 @@ def main(d=0, datapath='', outpath = ''):
                     out+=f'{f},{count},{labels[s_idx]},{seg_time[0]},{seg_time[1]}\n'
                     torchaudio.save(f'{outpath}/mouse_{d_text}s_train/{labels[s_idx]}/KO_{f}_{count}.wav', torch.from_numpy(seg.copy()).unsqueeze(0).float(), 250000)
                     count+=1
-            print(len(segments),count)
     open(f'{outpath}/mouse_{d_text}s_KO_6_weeks.txt','w').write(out)
 
-    import os
     for i in os.listdir(f'{outpath}/mouse_{d_text}s_train'):
         if not i.endswith('.txt'):
             os.makedirs(f'{outpath}/mouse_{d_text}s_train_KO/{i}',exist_ok=True)
@@ -260,7 +249,6 @@ def main(d=0, datapath='', outpath = ''):
                 else:
                     os.system(f'cp "{outpath}/mouse_{d_text}s_train/{i}/{j}" "{outpath}/mouse_{d_text}s_train_WT/{i}/{j}"')
 
-    import os
     for i in os.listdir(f'{outpath}/mouse_{d_text}s_test'):
         if not i.endswith('.txt'):
             os.makedirs(f'{outpath}/mouse_{d_text}s_test_KO/{i}',exist_ok=True)
@@ -271,7 +259,6 @@ def main(d=0, datapath='', outpath = ''):
                 else:
                     os.system(f'cp "{outpath}/mouse_{d_text}s_test/{i}/{j}" "{outpath}/mouse_{d_text}s_test_WT/{i}/{j}"')
 
-    import shutil
     shutil.rmtree(f'{outpath}/mouse_{d_text}s_train')
     shutil.rmtree(f'{outpath}/mouse_{d_text}s_test')
 
