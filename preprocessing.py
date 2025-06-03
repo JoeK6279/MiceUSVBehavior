@@ -81,6 +81,8 @@ def main(d=0, datapath='', outpath = ''):
     
     out = ''
     for f in os.listdir(f'{datapath}/WT 3 weeks'):
+        if not (f.endswith('.WAV') or f.endswith('.wav')):
+            continue
         preprocessor = UltrasonicPreprocessor(segment_duration=d)
         print(f"{datapath}/WT 3 weeks/{f}")
         segments, segments_time= preprocessor.process_file(f"{datapath}/WT 3 weeks/{f}")
