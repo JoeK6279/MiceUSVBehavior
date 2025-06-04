@@ -77,7 +77,7 @@ class UltrasonicPreprocessor:
 
 
 def main(d=0, datapath='', outpath = ''):
-    d_text = d if d in [1,2]  else str(d).replace('.','')
+    d_text = int(d) if d in [1,2]  else str(d).replace('.','')
     
     out = ''
     for f in os.listdir(f'{datapath}/WT 3 weeks'):
